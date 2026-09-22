@@ -3320,6 +3320,61 @@ function normalizeExpedisi(raw) {
   return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// ── NORMALISASI NAMA KOTA/KABUPATEN ──
+// Kolom Kota/Kabupaten sering ditulis beda-beda untuk daerah yang SAMA
+// (mis. "Karangasem" vs "Kab. Karangasem" vs "KARANGASEM" vs "KAB
+// KARANGASEM"), yang tanpa normalisasi bikin 1 daerah terpecah jadi
+// beberapa baris terpisah di ranking kota (tab Peta Wilayah) — padahal
+// harusnya 1. Disamakan dengan cara: buang awalan "Kab."/"Kab"/
+// "Kabupaten"/"Kota", rapikan spasi, lalu Title Case nama dasarnya.
+//
+// CATATAN: di sebagian kecil daerah Indonesia, "Kota X" dan "Kabupaten X"
+// itu 2 WILAYAH ADMINISTRATIF YANG BENAR-BENAR BEDA (mis. Kota Tangerang
+// vs Kabupaten Tangerang, Kota Bandung vs Kabupaten Bandung). Fungsi ini
+// SENGAJA tetap menggabungkan semuanya sesuai permintaan eksplisit Jaya
+// ("jadikan satu saja setiap kab/kota yang sama"). Kalau ternyata ada
+// nama daerah di data Jaya yang harus TETAP dipisah, tinggal tambahkan
+// nama dasarnya (huruf besar, tanpa "Kota"/"Kab.") ke daftar di bawah —
+// otomatis tidak akan digabung lagi untuk nama itu.
+const KOTA_JANGAN_GABUNG = new Set([
+  // contoh: 'TANGERANG', 'BANDUNG', 'BOGOR', 'BEKASI', 'CIREBON',
+]);
+
+// Nama daerah yang SECARA RESMI diawali kata "Kota" sebagai BAGIAN NAMA
+// itu sendiri (bukan penanda jenis wilayah seperti pada "Kota Tangerang")
+// -- kalau tidak dikecualikan di sini, prefix "Kota"-nya akan salah ikut
+// terpotong oleh normalizeKota dan namanya jadi rusak (mis. "Kab.
+// Kotawaringin Timur" jadi "Waringin Timur" tanpa "Kota"-nya). Ditulis
+// dengan varian pakai spasi & tanpa spasi karena penulisan manual di
+// sheet sering tidak konsisten (mis. "Kota Waringin" vs "Kotawaringin").
+const KOTA_NAMA_ASLI = {
+  'KOTAWARINGIN BARAT': 'Kotawaringin Barat',
+  'KOTA WARINGIN BARAT': 'Kotawaringin Barat',
+  'KOTAWARINGIN TIMUR': 'Kotawaringin Timur',
+  'KOTA WARINGIN TIMUR': 'Kotawaringin Timur',
+  'KOTABARU': 'Kotabaru',
+  'KOTA BARU': 'Kotabaru',
+  'KOTAMOBAGU': 'Kotamobagu',
+};
+
+function normalizeKota(raw) {
+  const s = String(raw || '').trim().replace(/\s+/g, ' ');
+  if (!s) return '';
+  const upper = s.toUpperCase();
+  const afterKab = upper.replace(/^KAB\.?\s+/, '').replace(/^KABUPATEN\s+/, '').trim();
+
+  if (KOTA_NAMA_ASLI[afterKab]) return KOTA_NAMA_ASLI[afterKab];
+
+  const baseKey = afterKab.replace(/^KOTA\s+/, '').trim();
+  if (!baseKey) return s; // jaga-jaga: kalau habis dibuang prefix jadi kosong, pakai teks asli
+
+  if (KOTA_JANGAN_GABUNG.has(baseKey)) {
+    // tetap dipisah, cuma rapikan kapitalisasinya saja (prefix asli dipertahankan)
+    return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+  }
+  return baseKey.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function rowsToRawRows(rows2D) {
   rawRows = [];
   invalidateRegionEstimasiCache(); // data baru masuk → cache P90 region lama jadi basi
@@ -3364,7 +3419,7 @@ function rowsToRawRows(rows2D) {
       nama: dashOrEmpty(r[colMap.nama]),
       produk: normalizeProduk(dashOrEmpty(r[colMap.produk])),
       bayar: normalizeBayar(dashOrEmpty(r[colMap.bayar])),
-      kota: dashOrEmpty(r[colMap.kota]),
+      kota: normalizeKota(dashOrEmpty(r[colMap.kota])),
       prov: dashOrEmpty(r[colMap.prov]),
       platform: dashOrEmpty(r[colMap.platform]),
       cs: normalizeCS(dashOrEmpty(r[colMap.cs])),
