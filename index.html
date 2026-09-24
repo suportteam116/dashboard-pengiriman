@@ -1173,12 +1173,126 @@
     .tabs-scroll { overflow-x: auto; }
     .summary-banner { flex-direction: column; align-items: flex-start; gap: 14px; }
     .cs-grid { grid-template-columns: repeat(2,1fr) !important; }
-    #prov-modal-minimap { display: none; }
-    #prov-modal-box { border-radius: 20px 0 0 20px; width: 95vw; }
+    /* Panel detail provinsi (muncul saat klik area di peta): di desktop
+       ini 3 panel berdampingan (estimasi kurir + minimap + panel utama).
+       Di HP itu jadi kelewat lebar & terpotong -- sembunyikan 2 panel
+       pendukung (estimasi kurir & minimap), sisakan panel utama full-width,
+       & pastikan isinya bisa discroll sampai benar-benar bawah (lihat juga
+       body-scroll-lock di showProvDetail()/closeProvModal()). */
+    #prov-modal-minimap, #prov-modal-est-window { display: none; }
+    #prov-modal-box { border-radius: 20px 0 0 20px; width: 96vw !important; max-width: 96vw !important; }
+    #prov-modal-header { padding: 16px 16px 12px !important; }
+    #prov-modal-body {
+      padding: 14px 16px 24px !important;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* ─── FILTER TANGGAL (date range picker): panel dropdown ini didesain
+       lebar (min-width 700px, 2 kalender berdampingan) utk desktop --
+       di HP jadi raksasa & meluber. Di HP: jadi panel mengambang di
+       tengah layar (bukan dropdown nempel di trigger), kalender kiri-kanan
+       ditumpuk vertikal, & preset jadi baris yang bisa wrap. ─── */
+    #drp-panel.open {
+      position: fixed !important;
+      top: 7vh !important;
+      left: 4vw !important;
+      right: 4vw !important;
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      max-height: 84vh !important;
+      flex-direction: column !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    #drp-presets {
+      width: 100% !important;
+      flex-direction: row !important;
+      flex-wrap: wrap;
+      border-right: none !important;
+      border-bottom: 1px solid rgba(99,102,241,0.12);
+      padding: 10px 10px 8px !important;
+      gap: 6px !important;
+    }
+    #drp-presets > div:first-child { width: 100%; padding: 0 2px 4px !important; }
+    .drp-preset { padding: 6px 10px !important; font-size: 10.5px !important; }
+    #drp-calendars { padding: 12px !important; gap: 10px !important; }
+    .drp-cal-row { flex-direction: column !important; gap: 14px !important; }
+    .drp-day { padding: 7px 2px !important; min-height: 30px; }
+    #drp-footer { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; padding: 10px 12px !important; }
+    #drp-footer-label { justify-content: center !important; font-size: 10.5px !important; }
+    #drp-apply-btn, #drp-cancel-btn { width: 100%; min-height: 40px; }
+    #drp-label-text { min-width: 0; }
     /* Panel detail CS & Performa per Platform ditumpuk vertikal, bukan berdampingan,
        supaya tidak melebihi lebar viewport di layar sempit. */
     #cs-modal-wrapper { flex-direction: column; max-height: 90vh; overflow-y: auto; }
     #cs-modal-box, #cs-modal-platform-box { width: 100%; max-width: 100%; max-height: none; flex-shrink: 0; }
+
+    /* ─── DASAR: SPASI & TIPOGRAFI HALAMAN DIPERKECIL BUAT LAYAR HP ─── */
+    body { font-size: 13px; }
+    #main-content { padding: 12px 12px 24px !important; }
+    [style*="padding: 16px 20px 0"] { padding: 12px 12px 0 !important; }
+    .tab-btn { padding: 11px 14px; font-size: 12px; min-height: 40px; }
+
+    /* ─── GRID KPI/KARTU YANG DITULIS SEBAGAI INLINE STYLE ───
+       Ditarget lewat attribute-selector karena jumlahnya puluhan & tersebar
+       di banyak tab + template JS -- jauh lebih aman drpd edit satu-satu. */
+    [style*="grid-template-columns:repeat(4,1fr)"],
+    [style*="grid-template-columns: repeat(4,1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
+    [style*="grid-template-columns:1fr 1fr"],
+    [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    [style*="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))"],
+    [style*="grid-template-columns: repeat(auto-fit,minmax(180px,1fr))"],
+    [style*="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))"],
+    [style*="grid-template-columns: repeat(auto-fill,minmax(160px,1fr))"] { grid-template-columns: 1fr !important; }
+    [style*="grid-template-columns:repeat(2,1fr)"],
+    [style*="grid-template-columns: repeat(2,1fr)"] { grid-template-columns: 1fr !important; }
+
+    /* ─── TABEL: biarkan scroll horizontal (wrapper sudah overflow-x:auto),
+       tapi padatkan font & padding, & beri min-width supaya kolom tidak
+       gepeng tak terbaca sebelum sempat discroll ─── */
+    [style*="overflow-x:auto"] { -webkit-overflow-scrolling: touch; }
+    .tbl { min-width: 640px; font-size: 10.5px; }
+    .tbl th { padding: 6px 8px; font-size: 9px; }
+    .tbl td { padding: 7px 8px; }
+    #raw-table, #inv-table { min-width: 900px; }
+    #manual-table { min-width: 760px; }
+
+    /* ─── MODAL: supaya pas di layar hp, tidak kepotong ─── */
+    .modal-box,
+    #master-option-modal-box,
+    #platform-retur-modal-box,
+    #cs-platform-retur-modal-box,
+    #cust-retur-modal-box {
+      width: 92vw !important; max-width: 92vw !important;
+      max-height: 85vh !important; overflow-y: auto !important;
+      padding: 20px 16px 18px !important;
+    }
+
+    /* ─── GRAFIK (Chart.js): tinggi container dipangkas biar muat di layar hp ─── */
+    [style*="position:relative;height:190px"] { height: 150px !important; }
+    [style*="position:relative;height:200px"] { height: 150px !important; }
+    [style*="position:relative;height:210px"] { height: 160px !important; }
+    [style*="position:relative;height:160px"] { height: 140px !important; }
+    [style="height:220px;"] { height: 170px !important; }
+
+    /* ─── FORM INVESTIGASI RETUR & KIRIM MANUAL: full-width, tumpuk vertikal,
+       & tap-target minimal ~40-44px ─── */
+    .inv-filter-bar { flex-direction: column; align-items: stretch; }
+    .inv-filter-bar > span[style*="width:1px"] { display: none; }
+    .inv-input, .inv-filter-select, .modal-input {
+      width: 100%; min-height: 40px; padding: 10px 12px; font-size: 13px;
+    }
+    .atm-row input[type="text"] { min-height: 40px; }
+    .btn-primary, .btn-secondary { min-height: 40px; padding: 11px 20px; }
+  }
+
+  /* tablet — tier lebih lembut, 4 kolom -> 2 kolom saja */
+  @media(max-width:900px) and (min-width:641px) {
+    [style*="grid-template-columns:repeat(4,1fr)"],
+    [style*="grid-template-columns: repeat(4,1fr)"] { grid-template-columns: repeat(2,1fr) !important; }
   }
 </style>
 </head>
@@ -2779,6 +2893,36 @@ let mapMode = 'total';
 let mapExpedisiFilter = ''; // '' = semua expedisi; nilai lain = filter ke expedisi tsb
 let csDetailChart = null;
 let charts = {};
+
+// ── PERFORMA CHART.JS DI HP ──────────────────────────────────────────
+// Ada ~10 chart di dashboard ini (banyak destroy+rebuild tiap ganti
+// filter). Tanpa pengaturan ini, tiap chart dirender di resolusi
+// devicePixelRatio penuh (banyak HP Android sekarang 3x) dan tiap kali
+// browser mobile show/hide address bar saat discroll, Chart.js
+// menganggap itu "resize" lalu redraw ulang semua chart -- gabungan
+// keduanya yang bikin chart kerasa berat/nge-freeze di HP. Ini dipasang
+// SEKALI di awal (sebelum chart pertama dibuat) supaya berlaku ke semua.
+if (typeof Chart !== 'undefined') {
+  // Batasi resolusi render ke maks 2x -- cukup tajam, tapi jauh lebih
+  // ringan drpd 3x di kebanyakan HP Android kelas menengah.
+  Chart.defaults.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  // Debounce redraw akibat resize (mis. address bar HP muncul/hilang
+  // saat scroll) supaya tidak redraw berkali-kali beruntun -> ini
+  // penyebab utama kesan "freeze" saat scroll di HP.
+  Chart.defaults.resizeDelay = 200;
+  // Di layar sempit (HP), matikan animasi masuk chart -- bukan cuma
+  // biar lebih ringan, tapi juga biar chart langsung kelihatan hasil
+  // akhirnya begitu ganti filter, tidak nunggu animasi tiap kali.
+  if (window.matchMedia && window.matchMedia('(max-width:640px)').matches) {
+    try {
+      Chart.defaults.animation = false;
+      Chart.defaults.animations = false;
+      if (Chart.defaults.transitions && Chart.defaults.transitions.active && Chart.defaults.transitions.active.animation) {
+        Chart.defaults.transitions.active.animation.duration = 0;
+      }
+    } catch (e) {}
+  }
+}
 
 // Text labels (editable)
 let LABELS = {
@@ -5210,34 +5354,57 @@ function drpDetectPreset() {
   return null;
 }
 
+// Cache 1 hasil filter terakhir supaya rebuildAllPeriodDependentSections()
+// (dipanggil tiap ganti filter tanggal/periode) tidak scan ulang rawRows
+// (bisa puluhan ribu baris) berkali-kali untuk tiap kartu/chart/tabel --
+// sebelumnya fungsi ini dipanggil ~15x dalam satu rebuild, jadi ~15x scan
+// penuh utk state filter yang SAMA. Cache-nya otomatis basi (dihitung ulang)
+// begitu rawRows diganti (refresh data) atau filter tanggal/periode berubah.
+let _gfrpCache = { rowsRef: null, key: null, result: null };
 function getFilteredRowsByPeriod() {
-  // Date range filter takes priority over period mode
+  let key;
+  if (drpActive && drpStart) {
+    key = 'drp:' + drpStart.getTime() + ':' + (drpEnd ? drpEnd.getTime() : drpStart.getTime());
+  } else if (typeof periodMode === 'undefined' || periodMode === 'all') {
+    key = 'all';
+  } else if (periodMode === 'quarter') {
+    key = 'quarter:' + (periodKeys[periodIndex] || '');
+  } else {
+    key = 'month:' + (periodKeys[periodIndex] || '');
+  }
+
+  if (_gfrpCache.rowsRef === rawRows && _gfrpCache.key === key) {
+    return _gfrpCache.result;
+  }
+
+  let result;
   if (drpActive && drpStart) {
     const s = drpStart.getTime();
     const e = (drpEnd || drpStart);
     const eMs = new Date(e.getFullYear(), e.getMonth(), e.getDate(), 23, 59, 59, 999).getTime();
-    return rawRows.filter(r => {
+    result = rawRows.filter(r => {
       const d = r.tglKirimDate;
       if (!d) return false;
       const t = d.getTime();
       return t >= s && t <= eMs;
     });
-  }
-  // Original period-mode logic
-  if (typeof periodMode === 'undefined' || periodMode === 'all') return rawRows;
-  if (periodMode === 'quarter') {
+  } else if (typeof periodMode === 'undefined' || periodMode === 'all') {
+    result = rawRows;
+  } else if (periodMode === 'quarter') {
     const qKey = periodKeys[periodIndex];
-    if (!qKey) return rawRows;
-    return rawRows.filter(r => r.quarter === qKey);
+    result = qKey ? rawRows.filter(r => r.quarter === qKey) : rawRows;
+  } else {
+    // periodMode === 'month'
+    const mKey = periodKeys[periodIndex];
+    result = mKey ? rawRows.filter(r => {
+      const d = r.tglKirimDate;
+      const rmk = d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` : 'zzz-unknown';
+      return rmk === mKey;
+    }) : rawRows;
   }
-  // periodMode === 'month'
-  const mKey = periodKeys[periodIndex];
-  if (!mKey) return rawRows;
-  return rawRows.filter(r => {
-    const d = r.tglKirimDate;
-    const rmk = d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` : 'zzz-unknown';
-    return rmk === mKey;
-  });
+
+  _gfrpCache = { rowsRef: rawRows, key: key, result: result };
+  return result;
 }
 
 
@@ -5673,8 +5840,18 @@ function buildPlatformPerf() {
   });
 
   const platColors = ['#6366f1','#8b5cf6','#a78bfa','#22d3ee','#f472b6','#34d399','#f59e0b','#fb923c'];
-  const platEntries = Object.entries(platData).sort((a,b) => b[1].total - a[1].total);
-  const maxTotal = platEntries.reduce((m,[,d]) => Math.max(m, d.total), 0);
+
+  // Metric aktif (tombol Total/Selesai/Retur/Retur Rate di atas) menentukan
+  // URUTAN kartu & angka besar yang ditonjolkan di tiap kartu. Sebelumnya
+  // kartu selalu sama persis (selalu urut Total & angka besar = Total)
+  // walau tombolnya ditekan/diganti -- makanya kelihatan "tidak ganti isi".
+  const metricLabel = { total:'Total Order', selesai:'Selesai', retur:'Retur', retur_rate:'Retur Rate (%)' };
+  const metricFn = { total: d => d.total, selesai: d => d.selesai, retur: d => d.retur, retur_rate: d => d.total > 0 ? parseFloat((d.retur/d.total*100).toFixed(1)) : 0 };
+  const activeFn = metricFn[platPerfMetric] || metricFn.total;
+  const activeLabel = metricLabel[platPerfMetric] || metricLabel.total;
+
+  const platEntries = Object.entries(platData).sort((a,b) => activeFn(b[1]) - activeFn(a[1]));
+  const maxMetricVal = platEntries.reduce((m,[,d]) => Math.max(m, activeFn(d)), 0);
 
   // Build cards
   const cardsEl = document.getElementById('platform-perf-cards');
@@ -5683,7 +5860,9 @@ function buildPlatformPerf() {
     const color = platColors[i % platColors.length];
     const rate = d.total > 0 ? (d.selesai / d.total * 100).toFixed(1) : '0.0';
     const returRate = d.total > 0 ? (d.retur / d.total * 100).toFixed(1) : '0.0';
-    const barPct = maxTotal > 0 ? Math.round(d.total / maxTotal * 100) : 0;
+    const metricVal = activeFn(d);
+    const metricValDisplay = platPerfMetric === 'retur_rate' ? `${metricVal}%` : metricVal.toLocaleString('id');
+    const barPct = maxMetricVal > 0 ? Math.round(metricVal / maxMetricVal * 100) : 0;
     const rateColor = parseFloat(rate) >= 80 ? '#34d399' : parseFloat(rate) >= 60 ? '#fbbf24' : '#f87171';
     const rateRing = parseFloat(rate) >= 80 ? 'rgba(16,185,129,0.2)' : parseFloat(rate) >= 60 ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)';
 
@@ -5704,8 +5883,8 @@ function buildPlatformPerf() {
           ${iconHtml}
           <div style="font-size:11px;font-weight:700;color:#e2e8f0;line-height:1.2;">${name}</div>
         </div>
-        <div style="font-size:22px;font-weight:800;color:${color};letter-spacing:-0.5px;line-height:1;">${d.total.toLocaleString('id')}</div>
-        <div style="font-size:9px;color:#64748b;margin-bottom:8px;">total order</div>
+        <div style="font-size:22px;font-weight:800;color:${color};letter-spacing:-0.5px;line-height:1;">${metricValDisplay}</div>
+        <div style="font-size:9px;color:#64748b;margin-bottom:8px;">${platPerfMetric === 'total' ? 'total order' : activeLabel.toLowerCase()}</div>
         <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:4px;overflow:hidden;margin-bottom:10px;">
           <div style="width:${barPct}%;height:4px;background:${color};border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);"></div>
         </div>
@@ -5727,12 +5906,9 @@ function buildPlatformPerf() {
       </div>`;
   });
 
-  // Bar chart comparing platforms
+  // Bar chart comparing platforms (platEntries sudah terurut sesuai metric aktif di atas)
   if (charts.platformPerf) { try { charts.platformPerf.destroy(); } catch(e){} delete charts.platformPerf; }
-  const metricLabel = { total:'Total Order', selesai:'Selesai', retur:'Retur', retur_rate:'Retur Rate (%)' };
-  const metricFn = { total: d => d.total, selesai: d => d.selesai, retur: d => d.retur, retur_rate: d => d.total > 0 ? parseFloat((d.retur/d.total*100).toFixed(1)) : 0 };
-  const fn = metricFn[platPerfMetric];
-  const sortedEntries = [...platEntries].sort((a,b) => fn(b[1]) - fn(a[1]));
+  const sortedEntries = platEntries;
   const chartColors = sortedEntries.map(([,],i) => platColors[i % platColors.length] + 'cc');
 
   charts.platformPerf = new Chart(document.getElementById('c-platform-perf'), {
@@ -5740,8 +5916,8 @@ function buildPlatformPerf() {
     data: {
       labels: sortedEntries.map(([n]) => n),
       datasets: [{
-        label: metricLabel[platPerfMetric],
-        data: sortedEntries.map(([,d]) => fn(d)),
+        label: activeLabel,
+        data: sortedEntries.map(([,d]) => activeFn(d)),
         backgroundColor: chartColors,
         borderRadius: 6,
         borderSkipped: false
@@ -6346,6 +6522,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 function closeProvModal() {
   document.getElementById('prov-modal').classList.remove('open');
   // Also hide the sticky minimap if it was shown alongside
+  // Lepas kunci scroll body (lihat showProvDetail()) supaya halaman
+  // bisa discroll normal lagi setelah panel ditutup.
+  document.body.style.overflow = '';
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -7313,6 +7492,11 @@ function showProvDetail(nm) {
 
   document.getElementById('prov-modal-title').textContent = nm;
   document.getElementById('prov-modal').classList.add('open');
+  // Kunci scroll halaman di belakang panel ini selagi terbuka -- supaya
+  // di HP, gesture scroll konsisten menggulir ISI panel (bukan malah
+  // ikut menggulir halaman di belakangnya), dan supaya bagian bawah
+  // panel (mis. tabel performa expedisi) selalu bisa dicapai.
+  document.body.style.overflow = 'hidden';
 
   // Build transparent minimap beside the panel
   buildProvModalMinimap(nm);
