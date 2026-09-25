@@ -2878,7 +2878,13 @@ function testDoPostDuplikat() {
 // ══════════════════════════════════════════════════════════
 let SHEET_ID = '';
 let SHEET_NAME = 'DATA QWARTAL 2';
-let SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHd2l5DlZo7G7xXzwJqzjVdyG180_fr-xUScY1W9UrFFn3l9OacwFQYWnr6pnOWEdY-w/exec';
+// URL Web App Apps Script yang AKTIF. Kalau suatu saat URL ini diganti di
+// kode, SEMUA perangkat (HP/laptop) otomatis ikut pindah ke URL baru saat
+// dashboard dibuka -- URL lama yang pernah tersimpan di browser tidak lagi
+// dipakai (lihat window.onload). Ini mencegah input Investigasi Retur /
+// Pengiriman Manual nyasar ke sheet lama.
+const SCRIPT_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbz7Kemt0bpnF5EhLokgJjT9rNQE-4vbtIVTnvHxr_wgjYkqD66AO6CIfcKg9bW8cs2Jgg/exec';
+let SCRIPT_URL = SCRIPT_URL_DEFAULT;
 let FETCH_METHOD = 'script'; // 'direct' or 'script'
 let AUTO_REFRESH_INTERVAL = null;
 let rawRows = [];
@@ -2948,10 +2954,19 @@ window.onload = function() {
   const savedScript = localStorage.getItem('gsheet_script_url');
   const savedName = localStorage.getItem('gsheet_name');
   const savedMethod = localStorage.getItem('gsheet_method');
-  if (savedScript && savedMethod === 'script') {
+  // Pengaturan tersimpan HANYA dipakai kalau dibuat saat URL default-nya
+  // masih sama dengan sekarang. Kalau URL default di kode sudah diganti
+  // (atau pengaturannya dari versi lama yang belum mencatat ini), pengaturan
+  // lama dibuang -> perangkat ini otomatis pakai URL baru.
+  const savedBase = localStorage.getItem('gsheet_script_url_base');
+  if (savedScript && savedMethod === 'script' && savedBase === SCRIPT_URL_DEFAULT) {
     SCRIPT_URL = savedScript;
     FETCH_METHOD = 'script';
     if (savedName) SHEET_NAME = savedName;
+  } else if (savedScript || savedMethod || savedName) {
+    ['gsheet_script_url', 'gsheet_name', 'gsheet_method', 'gsheet_id', 'gsheet_script_url_base']
+      .forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    console.info('[Dashboard] Pengaturan URL lama di browser ini dihapus, sekarang memakai URL default terbaru.');
   }
   // Selalu fetch dari Apps Script (sudah dikonfigurasi)
   fetchSheetData();
@@ -2996,6 +3011,7 @@ function loadFromSheet() {
     localStorage.setItem('gsheet_script_url', SCRIPT_URL);
     localStorage.setItem('gsheet_name', SHEET_NAME);
     localStorage.setItem('gsheet_method', 'script');
+    localStorage.setItem('gsheet_script_url_base', SCRIPT_URL_DEFAULT);
   } else {
     const urlInput = document.getElementById('sheet-url-input').value.trim();
     const idInput  = document.getElementById('sheet-id-input').value.trim();
