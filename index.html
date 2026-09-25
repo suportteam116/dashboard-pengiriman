@@ -4661,7 +4661,32 @@ function rowsToRawRows(rows2D) {
   if (rawRows.length === 0) {
     throw new Error('Header kolom ditemukan, tapi tidak ada baris dengan Resi terisi. Cek isi sheet Anda.');
   }
+  seragamkanKotaBedaSpasi(rawRows);
   aggregateData();
+}
+
+// Nama kota yang hanya beda spasi/tanda baca ("Karang Asem" vs "Karangasem",
+// "Deliserdang" vs "Deli Serdang") disatukan ke tulisan yang paling sering
+// dipakai -- aturannya sama dengan seragamkanKotaBedaSpasi_ di Apps Script,
+// supaya ranking kota di dashboard & tab Rekap tetap sama.
+function seragamkanKotaBedaSpasi(rows) {
+  const varian = {};
+  const kunci = v => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  rows.forEach(r => {
+    const k = kunci(r.kota);
+    if (!k) return;
+    const m = varian[k] || (varian[k] = {});
+    m[r.kota] = (m[r.kota] || 0) + 1;
+  });
+  const pilihan = {};
+  Object.keys(varian).forEach(k => {
+    let best = null, bestN = -1;
+    Object.entries(varian[k]).forEach(([t, n]) => {
+      if (n > bestN || (n === bestN && t.includes(' ') && !best.includes(' '))) { best = t; bestN = n; }
+    });
+    pilihan[k] = best;
+  });
+  rows.forEach(r => { const k = kunci(r.kota); if (k && pilihan[k]) r.kota = pilihan[k]; });
 }
 
 function parseJsonArray(rows) {
